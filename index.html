@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Shivam's ATM Machine</title>
+    <style>
+        /* CSS Styles */
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .atm-container {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            text-align: center;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-container {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #555;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 14px;
+            color: green;
+        }
+
+        #error {
+            margin-top: 20px;
+            font-size: 14px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="atm-container">
+        <h1>Welcome to Mr. Shivam's ATM</h1>
+
+        <!-- Main ATM Menu -->
+        <div id="atmMenu">
+            <button onclick="showLogin()">Login</button>
+            <button onclick="showCreateAccount()">Create New Account</button>
+            <button onclick="quitATM()">Quit</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="form-container">
+            <h2>Login</h2>
+            <label for="loginUserId">User ID:</label>
+            <input type="text" id="loginUserId" placeholder="Enter User ID" required>
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" placeholder="Enter Password" required>
+            <button onclick="login()">Submit</button>
+            <button onclick="backToMenu()">Back</button>
+            <div id="loginError"></div>
+        </div>
+
+        <!-- Create Account Form -->
+        <div id="createAccountForm" class="form-container">
+            <h2>Create Account</h2>
+            <label for="newUserId">User ID:</label>
+            <input type="text" id="newUserId" placeholder="Enter User ID" required>
+            <label for="newPassword">Password:</label>
+            <input type="password" id="newPassword" placeholder="Enter Password" required>
+            <button onclick="createAccount()">Create Account</button>
+            <button onclick="backToMenu()">Back</button>
+            <div id="createError"></div>
+        </div>
+
+        <!-- Account Menu -->
+        <div id="accountMenu" class="form-container">
+            <h2>Account Menu</h2>
+            <button onclick="showDeposit()">Deposit Money</button>
+            <button onclick="showWithdraw()">Withdraw Money</button>
+            <button onclick="requestBalance()">Request Balance</button>
+            <button onclick="logout()">Logout</button>
+            <div id="accountMessage"></div>
+        </div>
+
+        <!-- Deposit Form -->
+        <div id="depositForm" class="form-container">
+            <h2>Deposit Money</h2>
+            <label for="depositAmount">Amount:</label>
+            <input type="number" id="depositAmount" placeholder="Enter amount" required>
+            <button onclick="deposit()">Deposit</button>
+            <button onclick="backToAccountMenu()">Back</button>
+            <div id="depositMessage"></div>
+        </div>
+
+        <!-- Withdraw Form -->
+        <div id="withdrawForm" class="form-container">
+            <h2>Withdraw Money</h2>
+            <label for="withdrawAmount">Amount:</label>
+            <input type="number" id="withdrawAmount" placeholder="Enter amount" required>
+            <button onclick="withdraw()">Withdraw</button>
+            <button onclick="backToAccountMenu()">Back</button>
+            <div id="withdrawMessage"></div>
+        </div>
+
+        <!-- Quit Message -->
+        <div id="quitMessage" style="display: none;">
+            <h2>Thanks for stopping by!</h2>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript Code
+
+        // Account Object
+        const account = {
+            userId: "",
+            password: "",
+            balance: 0.0,
+
+            createAccount(uId, pw) {
+                this.userId = uId;
+                this.password = pw;
+                this.balance = 0.0;
+                return "Thank You! Your account has been created!";
+            },
+
+            login(uId, pw) {
+                return (this.userId === uId && this.password === pw);
+            },
+
+            deposit(amount) {
+                if (amount > 0) {
+                    this.balance += amount;
+                    return `Amount of deposit: $${amount.toFixed(2)}`;
+                } else {
+                    return "Invalid deposit amount!";
+                }
+            },
+
+            withdraw(amount) {
+                if (amount > 0 && amount <= this.balance) {
+                    this.balance -= amount;
+                    return `Amount of withdrawal: $${amount.toFixed(2)}`;
+                } else {
+                    return "Invalid withdrawal amount or insufficient funds!";
+                }
+            },
+
+            requestBalance() {
+                return `Your balance is $${this.balance.toFixed(2)}`;
+            },
+
+            accountExists() {
+                return this.userId !== "";
+            }
+        };
+
+        // Current Logged In State
+        let isLoggedIn = false;
+
+        // Function to Hide All Forms
+        function hideAllForms() {
+            const forms = document.querySelectorAll('.form-container');
+            forms.forEach(form => form.style.display = 'none');
+            document.getElementById('quitMessage').style.display = 'none';
+            document.getElementById('atmMenu').style.display = 'none';
+        }
+
+        // Show ATM Main Menu
+        function showMainMenu() {
+            hideAllForms();
+            document.getElementById('atmMenu').style.display = 'block';
+            clearMessages();
+        }
+
+        // Clear All Messages
+        function clearMessages() {
+            document.getElementById('message').innerText = "";
+            document.getElementById('loginError').innerText = "";
+            document.getElementById('createError').innerText = "";
+            document.getElementById('accountMessage').innerText = "";
+            document.getElementById('depositMessage').innerText = "";
+            document.getElementById('withdrawMessage').innerText = "";
+        }
+
+        // Show Login Form
+        function showLogin() {
+            hideAllForms();
+            document.getElementById('loginForm').style.display = 'block';
+            clearMessages();
+        }
+
+        // Show Create Account Form
+        function showCreateAccount() {
+            hideAllForms();
+            document.getElementById('createAccountForm').style.display = 'block';
+            clearMessages();
+        }
+
+        // Show Account Menu
+        function showAccountMenu() {
+            hideAllForms();
+            document.getElementById('accountMenu').style.display = 'block';
+            clearMessages();
+        }
+
+        // Show Deposit Form
+        function showDeposit() {
+            hideAllForms();
+            document.getElementById('depositForm').style.display = 'block';
+            clearMessages();
+        }
+
+        // Show Withdraw Form
+        function showWithdraw() {
+            hideAllForms();
+            document.getElementById('withdrawForm').style.display = 'block';
+            clearMessages();
+        }
+
+        // Show Quit Message
+        function quitATM() {
+            hideAllForms();
+            document.getElementById('quitMessage').style.display = 'block';
+        }
+
+        // Back to Main Menu
+        function backToMenu() {
+            showMainMenu();
+        }
+
+        // Back to Account Menu
+        function backToAccountMenu() {
+            showAccountMenu();
+        }
+
+        // Logout Function
+        function logout() {
+            isLoggedIn = false;
+            showMainMenu();
+            document.getElementById('accountMessage').innerText = "You have been logged out.";
+        }
+
+        // Login Function
+        function login() {
+            const userId = document.getElementById('loginUserId').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const loginError = document.getElementById('loginError');
+
+            if (account.login(userId, password)) {
+                isLoggedIn = true;
+                loginError.style.color = 'green';
+                loginError.innerText = "Access Granted!";
+                showAccountMenu();
+            } else {
+                loginError.style.color = 'red';
+                loginError.innerText = "*** LOGIN FAILED! ***";
+            }
+        }
+
+        // Create Account Function
+        function createAccount() {
+            const newUserId = document.getElementById('newUserId').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            const createError = document.getElementById('createError');
+
+            if (account.accountExists()) {
+                createError.style.color = 'red';
+                createError.innerText = "An account already exists. You cannot create another one.";
+                return;
+            }
+
+            if (newUserId === "" || newPassword === "") {
+                createError.style.color = 'red';
+                createError.innerText = "User ID and Password cannot be empty!";
+                return;
+            }
+
+            const message = account.createAccount(newUserId, newPassword);
+            createError.style.color = 'green';
+            createError.innerText = message;
+            showMainMenu();
+        }
+
+        // Deposit Function
+        function deposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const depositMessage = document.getElementById('depositMessage');
+
+            const result = account.deposit(amount);
+            if (result.startsWith("Amount of deposit")) {
+                depositMessage.style.color = 'green';
+            } else {
+                depositMessage.style.color = 'red';
+            }
+            depositMessage.innerText = result;
+        }
+
+        // Withdraw Function
+        function withdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const withdrawMessage = document.getElementById('withdrawMessage');
+
+            const result = account.withdraw(amount);
+            if (result.startsWith("Amount of withdrawal")) {
+                withdrawMessage.style.color = 'green';
+            } else {
+                withdrawMessage.style.color = 'red';
+            }
+            withdrawMessage.innerText = result;
+        }
+
+        // Request Balance Function
+        function requestBalance() {
+            const accountMessage = document.getElementById('accountMessage');
+            const balance = account.requestBalance();
+            accountMessage.style.color = 'green';
+            accountMessage.innerText = balance;
+        }
+
+        // Initialize the ATM Interface
+        window.onload = function() {
+            showMainMenu();
+        };
+    </script>
+</body>
+</html>
